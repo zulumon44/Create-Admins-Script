@@ -1,15 +1,22 @@
-
-
+    # Originally Compiled by Austen K.
+    # Fixed & Improved by Tyler T
+   
+    # Get IP of DC (leaving blank skips code later)
+    
     $DCIP = Read-Host "Please enter the IP of the Domain Controller 1 (Hit enter if DC1)" 
     
-
-
+    # Start firewall networking service (if not already)
+    
     net start mpssvc
-
-
+    
+    # Remove and reset all firewall rules
+    
     netsh advfirewall reset
     Disable-NetFirewallRule;
 
+    # Set up firewall rules to/from the DC
+
+    #!! Fix these later!!
 
     New-NetFirewallRule -Dis "Allow TCP communication to DC" -Dir Outbound -RemotePort 389,636,3268,3269,88,53,445,135,5722,464,9389,139,49152-65535 -Prot TCP -Act Allow -RemoteAddress $DCIP
     New-NetFirewallRule -Dis "Allow UDP communication to DC" -Dir Outbound -RemotePort 389,88,53,445,123,464,138,137,49152-65535 -Prot UDP -Act Allow -RemoteAddress $DCIP
@@ -17,12 +24,10 @@
     New-NetFirewallRule -Dis "Allow TCP communication from DC" -Dir Inbound -LocalPort 389,636,3268,3269,88,53,445,135,5722,464,9389,139,49152-65535 -Prot TCP -Act Allow -RemoteAddress $DCIP
     New-NetFirewallRule -Dis "Allow UDP communication from DC" -Dir Inbound -LocalPort 389,88,53,445,123,464,138,137,49152-65535 -Prot UDP -Act Allow -RemoteAddress $DCIP
 
-
     if ($null -ne (Get-NetIPAddress | Where-Object {$_.IPAddress -eq "$DCIP"})) {
         New-NetFirewallRule -Dis "Allow TCP communication to client" -Dir Outbound -RemotePort 389,636,3268,3269,88,53,445,135,5722,464,9389,139,49152-65535 -Prot TCP -Act Allow -RemoteAddress "$DCIP/24"
         New-NetFirewallRule -Dis "Allow UDP communication to client" -Dir Outbound -RemotePort 389,88,53,445,123,464,138,137,49152-65535 -Prot UDP -Act Allow -RemoteAddress "$DCIP/24"
     }
-
 
     New-NetFirewallRule -Dis "Block Local Services" -Dir Outbound -RemotePort 80,443,22,21,20,110,995 -Prot TCP -Act Block -RemoteAddress "$DCIP/24" 
     New-NetFirewallRule -Dis "Allow Remote Services" -Dir Outbound -RemotePort 80,443,22,21,20,110,995 -Prot TCP -Act Allow
@@ -30,6 +35,7 @@
 
     New-NetFirewallRule -Dis "Inbound Services" -Dir Inbound -LocalPort 1-10000 -Prot TCP -Act Allow
 
+# ---------------------------------------------------
 
     reg add HKLM\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile /V EnableFirewall /T REG_DWORD /D 1 /F 
     reg add HKLM\SOFTWARE\Policies\Microsoft\WindowsFirewall\PrivateProfile /V EnableFirewall /T REG_DWORD /D 1 /F 
