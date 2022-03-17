@@ -1,6 +1,34 @@
     # Originally Compiled by Austen K.
     # Fixed & Improved by Tyler T
    
+   
+   clear
+   Write-Output "1) Auto"
+   Write-Output "2) Manual"
+   Write-Output "3) Exit"
+   $opt = Read-Host
+   clear
+   $auto = 0
+   
+   if ($opt == 3)
+   exit
+   if ($opt == 1){
+   $auto = 1
+   Write-Output "Initializing Auto Secure..."
+   }
+   if ($opt == 2){
+    Write-Output "All Prompts require 'y' or 'n'"
+    $yn = Read-Host "Secure SMB? "
+   
+   }
+   
+   Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol -NoRestart  
+    Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force 
+
+
+    Set-SmbServerConfiguration -EnableSMB2Protocol $true -Force
+    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB2 -Type DWORD -Value 1 -Force
+   
     # Get IP of DC (leaving blank skips code later)
     
     $DCIP = Read-Host "Please enter the IP of the Domain Controller 1 (Hit enter if DC1)" 
@@ -103,12 +131,7 @@
 
     sc.exe config lanmanworkstation depend= bowser/mrxsmb20/nsi 
     sc.exe config mrxsmb10 start= disabled
-    Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol -NoRestart  
-    Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force 
-
-
-    Set-SmbServerConfiguration -EnableSMB2Protocol $true -Force
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB2 -Type DWORD -Value 1 -Force
+    
 
 
     net share C:\ /delete
@@ -370,7 +393,7 @@
     
 
     attrib -r -s C:\WINDOWS\system32\drivers\etc\hosts
-    cmd.exe /c "echo
+   # cmd.exe /c "echo"
     attrib +r +s C:\WINDOWS\system32\drivers\etc\hosts
 
 
